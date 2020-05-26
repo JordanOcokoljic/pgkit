@@ -56,5 +56,4 @@ func TemporaryDatabaseTestCase(
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
-
 }

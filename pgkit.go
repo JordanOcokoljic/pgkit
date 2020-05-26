@@ -36,7 +36,8 @@ func NewConnectionDetail() ConnectionDetail {
 
 // ParseDetails extracts the connection details out of the connection URI.
 func ParseDetails(connection string) (ConnectionDetail, error) {
-	cd := NewConnectionDetail()
+	tokens := lex(connection)
+	cd := parse(tokens)
 	return cd, nil
 }
 
@@ -50,21 +51,21 @@ type DB struct {
 // Open will attempt to open a connection to a Postgres Database as specified
 // by the connection string provided, it will then ping the database to see if
 // the connection is valid.
-func Open(connection string) (*DB, error) {
+func Open(connection string) (DB, error) {
 	db, err := sql.Open("postgres", connection)
 	if err != nil {
-		return nil, err
+		return DB{}, err
 	}
 
 	err = db.Ping()
 	if err != nil {
-		return nil, err
+		return DB{}, err
 	}
 
 	cd, err := ParseDetails(connection)
 	if err != nil {
-		return nil, err
+		return DB{}, err
 	}
 
-	return &DB{db, cd}, nil
+	return DB{db, cd}, nil
 }
