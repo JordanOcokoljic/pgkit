@@ -1,8 +1,8 @@
-package testing
+package pgunit
 
 import (
-	"crypto/rand"
 	"fmt"
+	"math/rand"
 	"testing"
 
 	"github.com/JordanOcokoljic/pgkit"
@@ -28,16 +28,18 @@ func TransactionedTestCase(
 	fn(t, tx)
 }
 
+// letterBytes is used to generate random names for databases.
+const letterBytes = "abcdefghijklmnopqrstuvwxyz"
+
 // generateRandomName returns a random string of characters to provide names
 // for temporary objects.
-func generateRandomName(t *testing.T) string {
-	t.Helper()
-	name := make([]byte, 24)
-	if _, err := rand.Read(name); err != nil {
-		t.Fatalf(err.Error())
+func generateRandomName() string {
+	b := make([]byte, 12)
+	for i := range b {
+		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
 	}
 
-	return string(name)
+	return string(b)
 }
 
 // TemporaryDatabaseTestCase creates a new database and executes the provided
@@ -49,8 +51,9 @@ func TemporaryDatabaseTestCase(
 	fn func(*testing.T, pgkit.DB),
 ) {
 	t.Helper()
-	name := generateRandomName(t)
-	cmd := fmt.Sprintf("CREATE DATABASE %s;", name)
+
+	name := generateRandomName()
+	cmd := fmt.Sprintf("CREATE DATABASE %s", name)
 	_, err := db.Exec(cmd)
 	if err != nil {
 		t.Fatalf(err.Error())
@@ -64,13 +67,38 @@ func TemporaryDatabaseTestCase(
 		t.Fatalf(err.Error())
 	}
 
-	defer ndb.Close()
-
 	fn(t, ndb)
 
-	cmd = fmt.Sprintf("DROP DATABASE %sl;", name)
+	ndb.Close()
+
+	cmd = fmt.Sprintf("DROP DATABASE %s", name)
 	_, err = db.Exec(cmd)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
+}
+
+// GetDatabaseTableNames will return the names of all the tables in the public
+// schema.
+func GetDatabaseTableNames(t *testing.T, db pgkit.DB) []string {
+	t.Helper()
+
+	rows, err := db.Query("SELECT * FROM information_schema.tables WHERE table_schema = 'public'")
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	defer rows.Close()
+
+	var tables []string
+	for rows.Next() {
+		var table string
+		if err = rows.Scan(&table); err != nil {
+			t.Fatalf(err.Error())
+		}
+
+		tables = append(tables, table)
+	}
+
+	return tables
 }
