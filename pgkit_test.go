@@ -169,3 +169,45 @@ func TestUriParseDetailsOptions(t *testing.T) {
 		)
 	}
 }
+
+func TestConnectionDetailCopy(t *testing.T) {
+	cd := pgkit.NewConnectionDetail()
+	cd.User = "user"
+	cd.Password = "password"
+	cd.Location = "location"
+	cd.Port = "port"
+	cd.Database = "database"
+	cd.Options["option"] = "value"
+
+	ncd := cd.Copy()
+	ncd.User = "user2"
+	ncd.Password = "password2"
+	ncd.Location = "location2"
+	ncd.Port = "port2"
+	ncd.Database = "database2"
+	ncd.Options["option"] = "value2"
+
+	if cd.User == ncd.User {
+		t.Errorf("user field changed on original instance")
+	}
+
+	if cd.Password == ncd.Password {
+		t.Errorf("password field changed on original instance")
+	}
+
+	if cd.Location == ncd.Location {
+		t.Errorf("location field changed on original instance")
+	}
+
+	if cd.Port == ncd.Port {
+		t.Errorf("port field changed on original instance")
+	}
+
+	if cd.Database == ncd.Database {
+		t.Errorf("database field changed on original instance")
+	}
+
+	if cd.Options["option"] == ncd.Options["option"] {
+		t.Errorf("option field changed on original instance")
+	}
+}

@@ -35,6 +35,23 @@ func NewConnectionDetail() ConnectionDetail {
 	return cd
 }
 
+// Copy returns a deep copy of the ConnectionDetail so it can be manipulated
+// without impacting the original.
+func (cd *ConnectionDetail) Copy() ConnectionDetail {
+	ncd := NewConnectionDetail()
+	ncd.User = cd.User
+	ncd.Password = cd.Password
+	ncd.Location = cd.Location
+	ncd.Port = cd.Port
+	ncd.Database = cd.Database
+
+	for key, value := range cd.Options {
+		ncd.Options[key] = value
+	}
+
+	return ncd
+}
+
 // ParseDetails extracts the connection details out of the connection URI.
 func ParseDetails(connection string) (ConnectionDetail, error) {
 	cd := NewConnectionDetail()
