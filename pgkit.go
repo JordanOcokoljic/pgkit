@@ -52,6 +52,27 @@ func (cd *ConnectionDetail) Copy() ConnectionDetail {
 	return ncd
 }
 
+// IsValid indicates if the information in the ConnectionDetail can be used to
+// construct a valid connection.
+func (cd *ConnectionDetail) IsValid() bool {
+	// Password is set without user
+	if cd.Password != "" && cd.User == "" {
+		return false
+	}
+
+	// Port is set without location
+	if cd.Port != "" && cd.Location == "" {
+		return false
+	}
+
+	// Option without a key
+	if _, ok := cd.Options[""]; ok {
+		return false
+	}
+
+	return true
+}
+
 // ParseDetails extracts the connection details out of the connection URI.
 func ParseDetails(connection string) (ConnectionDetail, error) {
 	cd := NewConnectionDetail()

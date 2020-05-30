@@ -211,3 +211,41 @@ func TestConnectionDetailCopy(t *testing.T) {
 		t.Errorf("option field changed on original instance")
 	}
 }
+
+func TestConnectionIsValid(t *testing.T) {
+	cd := pgkit.NewConnectionDetail()
+	cd.Password = "password"
+	if cd.IsValid() {
+		t.Errorf("detail was valid with unset username and set password")
+	}
+
+	cd = pgkit.NewConnectionDetail()
+	cd.Port = "5432"
+	if cd.IsValid() {
+		t.Errorf("detail was valid with unset location and set port")
+	}
+
+	cd = pgkit.NewConnectionDetail()
+	cd.Port = "port"
+	if cd.IsValid() {
+		t.Errorf("detail was valid with non numerical port")
+	}
+
+	cd = pgkit.NewConnectionDetail()
+	cd.Options[""] = "value"
+	if cd.IsValid() {
+		t.Errorf("detail was valid with blank option key")
+	}
+
+	cd = pgkit.NewConnectionDetail()
+	cd.User = "user"
+	cd.Password = "password"
+	cd.Location = "location"
+	cd.Port = "5432"
+	cd.Database = "database"
+	cd.Options["sslmode"] = "disable"
+
+	if !cd.IsValid() {
+		t.Errorf("detail was invalid when all values set correctly")
+	}
+}
