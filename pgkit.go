@@ -2,8 +2,10 @@ package pgkit
 
 import (
 	"database/sql"
+	"fmt"
 	"net/url"
 	"strconv"
+	"strings"
 
 	// Used to establish a connections to postgres databases.
 	_ "github.com/lib/pq"
@@ -77,6 +79,49 @@ func (cd *ConnectionDetail) IsValid() bool {
 	}
 
 	return true
+}
+
+// Returns a URL with the same values as the ConnectionDetail represents. It
+// will not check if the returned URL is valid, that is left up to the user.
+func (cd *ConnectionDetail) String() string {
+	var str strings.Builder
+	str.WriteString("postgresql://")
+
+	if cd.User != "" {
+		str.WriteString(cd.User)
+
+		if cd.Password != "" {
+			str.WriteString(fmt.Sprintf(":%s", cd.Password))
+		}
+
+		str.WriteString("@")
+	}
+
+	if cd.Location != "" {
+		str.WriteString(cd.Location)
+
+		if cd.Port != "" {
+			str.WriteString(fmt.Sprintf(":%s", cd.Port))
+		}
+	}
+
+	if cd.Database != "" {
+		str.WriteString(fmt.Sprintf("/%s", cd.Database))
+	}
+
+	if len(cd.Options) > 0 {
+		str.WriteString("?")
+
+		var sub strings.Builder
+		for key, value := range cd.Options {
+			sub.WriteString(fmt.Sprintf("%s=%s&", key, value))
+		}
+
+		options := sub.String()
+		str.WriteString(options[:len(options)-1])
+	}
+
+	return str.String()
 }
 
 // ParseDetails extracts the connection details out of the connection URI.

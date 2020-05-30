@@ -249,3 +249,81 @@ func TestConnectionIsValid(t *testing.T) {
 		t.Errorf("detail was invalid when all values set correctly")
 	}
 }
+
+func TestConnectionString(t *testing.T) {
+	tests := []struct {
+		name     string
+		user     string
+		password string
+		location string
+		port     string
+		database string
+		expected string
+	}{
+		{
+			name:     "AllFields",
+			user:     "user",
+			password: "password",
+			location: "location",
+			port:     "5432",
+			database: "database",
+			expected: "postgresql://user:password@location:5432/database",
+		},
+		{
+			name:     "NoPasswordNoPort",
+			user:     "user",
+			password: "",
+			location: "location",
+			port:     "",
+			database: "database",
+			expected: "postgresql://user@location/database",
+		},
+		{
+			name:     "NoUserWithPassword",
+			user:     "",
+			password: "password",
+			location: "location",
+			port:     "5432",
+			database: "database",
+			expected: "postgresql://location:5432/database",
+		},
+		{
+			name:     "NoLocationWithPort",
+			user:     "",
+			password: "",
+			location: "",
+			port:     "5432",
+			database: "database",
+			expected: "postgresql:///database",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(s *testing.T) {
+			cd := pgkit.NewConnectionDetail()
+			cd.User = test.user
+			cd.Password = test.password
+			cd.Location = test.location
+			cd.Port = test.port
+			cd.Database = test.database
+
+			url := cd.String()
+			if url != test.expected {
+				s.Errorf("expected url %s but was %s", test.expected, url)
+			}
+		})
+	}
+}
+
+func TestConnectionStringOptions(t *testing.T) {
+	cd := pgkit.NewConnectionDetail()
+	cd.Options["sslmode"] = "disable"
+	cd.Options["application_name"] = "pgkit"
+
+	expected := "postgresql://?sslmode=disable&application_name=pgkit"
+	url := cd.String()
+
+	if url != expected {
+		t.Errorf("expected url %s but was %s", expected, url)
+	}
+}
