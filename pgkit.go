@@ -3,6 +3,7 @@ package pgkit
 import (
 	"database/sql"
 	"net/url"
+	"strconv"
 
 	// Used to establish a connections to postgres databases.
 	_ "github.com/lib/pq"
@@ -67,6 +68,11 @@ func (cd *ConnectionDetail) IsValid() bool {
 
 	// Option without a key
 	if _, ok := cd.Options[""]; ok {
+		return false
+	}
+
+	// Port is non numeric
+	if _, err := strconv.Atoi(cd.Port); err != nil {
 		return false
 	}
 
