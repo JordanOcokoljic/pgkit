@@ -156,7 +156,7 @@ func ParseDetails(connection string) (ConnectionDetail, error) {
 // name of the server and current database name can be recorded.
 type DB struct {
 	*sql.DB
-	ConnectionDetail
+	Connection ConnectionDetail
 }
 
 // Open will attempt to open a connection to a Postgres Database as specified

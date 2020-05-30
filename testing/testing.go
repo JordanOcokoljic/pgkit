@@ -2,7 +2,6 @@ package testing
 
 import (
 	"crypto/rand"
-	"database/sql"
 	"fmt"
 	"testing"
 
@@ -15,7 +14,7 @@ import (
 // outer test.
 func TransactionedTestCase(
 	t *testing.T,
-	db *sql.DB,
+	db pgkit.DB,
 	fn func(*testing.T, pgkit.DataProvider),
 ) {
 	t.Helper()
@@ -24,9 +23,9 @@ func TransactionedTestCase(
 		t.Fatalf(err.Error())
 	}
 
-	fn(t, tx)
+	defer tx.Rollback()
 
-	tx.Rollback()
+	fn(t, tx)
 }
 
 // generateRandomName returns a random string of characters to provide names
@@ -46,13 +45,31 @@ func generateRandomName(t *testing.T) string {
 // is complete, the temporary database is destroyed.
 func TemporaryDatabaseTestCase(
 	t *testing.T,
-	db *sql.DB,
-	fn func(*testing.T, *sql.DB),
+	db pgkit.DB,
+	fn func(*testing.T, pgkit.DB),
 ) {
 	t.Helper()
 	name := generateRandomName(t)
 	cmd := fmt.Sprintf("CREATE DATABASE %s;", name)
 	_, err := db.Exec(cmd)
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	connDetail := db.Connection.Copy()
+	connDetail.Database = name
+
+	ndb, err := pgkit.Open(connDetail.String())
+	if err != nil {
+		t.Fatalf(err.Error())
+	}
+
+	defer ndb.Close()
+
+	fn(t, ndb)
+
+	cmd = fmt.Sprintf("DROP DATABASE %sl;", name)
+	_, err = db.Exec(cmd)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
