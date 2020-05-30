@@ -97,33 +97,6 @@ func TestParseDetails(t *testing.T) {
 			port:     "5432",
 			database: "postgres",
 		},
-		{
-			name:     "KeyValueHost",
-			uri:      "host=localhost",
-			user:     "",
-			password: "",
-			location: "localhost",
-			port:     "",
-			database: "",
-		},
-		{
-			name:     "KeyValueHostAndPort",
-			uri:      "host=localhost port=5432",
-			user:     "",
-			password: "",
-			location: "localhost",
-			port:     "5432",
-			database: "",
-		},
-		{
-			name:     "KeyValueQuotedValue",
-			uri:      "host=localhost user=pgkit password='sec ret'",
-			user:     "pgkit",
-			password: "sec ret",
-			location: "localhost",
-			port:     "5432",
-			database: "",
-		},
 	}
 
 	for _, test := range tests {
@@ -173,32 +146,6 @@ func TestParseDetails(t *testing.T) {
 
 func TestUriParseDetailsOptions(t *testing.T) {
 	con := "postgresql://localhost?sslmode=disabled&application_name=pgkit"
-	cd, err := pgkit.ParseDetails(con)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
-
-	if len(cd.Options) != 2 {
-		t.Fatalf("expected 2 options but there were %d", len(cd.Options))
-	}
-
-	if cd.Options["sslmode"] != "disabled" {
-		t.Errorf(
-			"sslmode not extracted correctly, was %s expected disabled",
-			cd.Options["sslmode"],
-		)
-	}
-
-	if cd.Options["application_name"] != "pgkit" {
-		t.Errorf(
-			"application_name not extracted correctly, was %s expected pgkit",
-			cd.Options["application_name"],
-		)
-	}
-}
-
-func TestKeyValueParseDetailsOptions(t *testing.T) {
-	con := "host=localhost sslmode=disabled application_name=pgkit"
 	cd, err := pgkit.ParseDetails(con)
 	if err != nil {
 		t.Fatalf(err.Error())

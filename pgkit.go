@@ -2,6 +2,7 @@ package pgkit
 
 import (
 	"database/sql"
+	"net/url"
 
 	// Used to establish a connections to postgres databases.
 	_ "github.com/lib/pq"
@@ -36,8 +37,29 @@ func NewConnectionDetail() ConnectionDetail {
 
 // ParseDetails extracts the connection details out of the connection URI.
 func ParseDetails(connection string) (ConnectionDetail, error) {
-	tokens := lex(connection)
-	cd := parse(tokens)
+	cd := NewConnectionDetail()
+
+	u, err := url.Parse(connection)
+	if err != nil {
+		return cd, err
+	}
+
+	cd.User = u.User.Username()
+	cd.Location = u.Hostname()
+	cd.Port = u.Port()
+
+	if path := u.Path; path != "" {
+		cd.Database = u.Path[1:]
+	}
+
+	if password, hasPassword := u.User.Password(); hasPassword {
+		cd.Password = password
+	}
+
+	for key, value := range u.Query() {
+		cd.Options[key] = value[0]
+	}
+
 	return cd, nil
 }
 
