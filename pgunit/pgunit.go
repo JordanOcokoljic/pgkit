@@ -78,12 +78,12 @@ func TemporaryDatabaseTestCase(
 	}
 }
 
-// GetDatabaseTableNames will return the names of all the tables in the public
+// GetSchemaTableNames will return the names of all the tables in the public
 // schema.
-func GetDatabaseTableNames(t *testing.T, db pgkit.DB) []string {
+func GetSchemaTableNames(t *testing.T, db pgkit.DB, schema string) []string {
 	t.Helper()
 
-	rows, err := db.Query("SELECT * FROM information_schema.tables WHERE table_schema = 'public'")
+	rows, err := db.Query("SELECT * FROM information_schema.tables WHERE table_schema = $1", schema)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}

@@ -16,7 +16,7 @@ func TestTransactionedTestCase(t *testing.T) {
 
 	defer db.Close()
 
-	preTableNames := pgunit.GetDatabaseTableNames(t, db)
+	preTableNames := pgunit.GetSchemaTableNames(t, db, "public")
 
 	pgunit.TransactionedTestCase(
 		t, db,
@@ -28,7 +28,7 @@ func TestTransactionedTestCase(t *testing.T) {
 		},
 	)
 
-	postTableNames := pgunit.GetDatabaseTableNames(t, db)
+	postTableNames := pgunit.GetSchemaTableNames(t, db, "public")
 
 	if len(postTableNames) != len(preTableNames) {
 		t.Fatalf("table name slice lengths did not match")
@@ -67,7 +67,7 @@ func TestTemporaryDatabaseTestCase(t *testing.T) {
 
 	ndb, err := pgkit.Open(dbConn.String())
 	if err == nil {
-		t.Fatal("database was accessable after subtest")
 		ndb.Close()
+		t.Fatal("database was accessable after subtest")
 	}
 }
