@@ -71,3 +71,30 @@ func TestTemporaryDatabaseTestCase(t *testing.T) {
 		t.Fatal("database was accessible after subtest")
 	}
 }
+
+func TestDatabaseGetsTornDownIfFatalOccurs(t *testing.T) {
+	db, err := pgkit.Open(os.Getenv("PGKIT_TEST_URL"))
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	var dbConn pgkit.ConnectionDetail
+	defer func() {
+		db.Close()
+
+		if r := recover(); r == nil {
+			t.Error("did not recover")
+		}
+
+		ndb, err := pgkit.Open(dbConn.String())
+		if err == nil {
+			ndb.Close()
+			t.Error("database was accessible after teardown")
+		}
+	}()
+
+	pgunit.TemporaryDatabaseTestCase(t, db, func(s *testing.T, sdb pgkit.DB) {
+		dbConn = sdb.Connection.Copy()
+		panic("panic")
+	})
+}

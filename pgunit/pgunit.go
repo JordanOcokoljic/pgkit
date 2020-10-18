@@ -69,15 +69,17 @@ func TemporaryDatabaseTestCase(
 		t.Fatalf(err.Error())
 	}
 
+	defer func() {
+		ndb.Close()
+
+		cmd = fmt.Sprintf("DROP DATABASE %s", name)
+		_, err = db.Exec(cmd)
+		if err != nil {
+			t.Fatalf(err.Error())
+		}
+	}()
+
 	fn(t, ndb)
-
-	ndb.Close()
-
-	cmd = fmt.Sprintf("DROP DATABASE %s", name)
-	_, err = db.Exec(cmd)
-	if err != nil {
-		t.Fatalf(err.Error())
-	}
 }
 
 // GetSchemaTableNames will return the names of all the tables in the public
