@@ -68,6 +68,6 @@ func TestTemporaryDatabaseTestCase(t *testing.T) {
 	ndb, err := pgkit.Open(dbConn.String())
 	if err == nil {
 		ndb.Close()
-		t.Fatal("database was accessable after subtest")
+		t.Fatal("database was accessible after subtest")
 	}
 }

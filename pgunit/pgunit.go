@@ -85,7 +85,7 @@ func TemporaryDatabaseTestCase(
 func GetSchemaTableNames(t *testing.T, db pgkit.DB, schema string) []string {
 	t.Helper()
 
-	rows, err := db.Query("SELECT * FROM information_schema.tables WHERE table_schema = $1", schema)
+	rows, err := db.Query("SELECT table_name FROM information_schema.tables WHERE table_schema = $1", schema)
 	if err != nil {
 		t.Fatalf(err.Error())
 	}
