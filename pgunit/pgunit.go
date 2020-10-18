@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/JordanOcokoljic/pgkit"
 )
@@ -35,6 +36,7 @@ const letterBytes = "abcdefghijklmnopqrstuvwxyz"
 // for temporary objects.
 func generateRandomName() string {
 	b := make([]byte, 12)
+	rand.Seed(time.Now().UnixNano())
 	for i := range b {
 		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
 	}
